@@ -1,0 +1,37 @@
+[project]
+name = "env-management"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "aachaltiwari",email = "mail2aachal@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "annotated-types (==0.7.0)",
+    "anyio (==4.12.0)",
+    "click (==8.3.1)",
+    "dnspython (==2.8.0)",
+    "h11 (==0.16.0)",
+    "idna (==3.11)",
+    "motor (==3.7.1)",
+    "pydantic[email] (>=2.12.5,<3.0.0)",
+    "pydantic-core (==2.41.5)",
+    "pymongo (==4.15.5)",
+    "python-dotenv (==1.2.1)",
+    "starlette (==0.50.0)",
+    "typing-inspection (==0.4.2)",
+    "typing-extensions (==4.15.0)",
+    "uvicorn (==0.40.0)",
+    "pydantic-settings (>=2.12.0,<3.0.0)",
+    "python-jose[cryptography] (>=3.5.0,<4.0.0)",
+    "passlib[argon2] (>=1.7.4,<2.0.0)"
+]
+
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
