@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     jwt_secret: str = Field(alias="JWT_SECRET")
     jwt_algorithm: str = Field(alias="JWT_ALGORITHM")
     jwt_access_token_expire_minutes: int = Field(alias="JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
+    jwt_refresh_token_expire_days: int = Field(alias="JWT_REFRESH_TOKEN_EXPIRE_DAYS")
 
     class Config:
         env_file = ".env"
