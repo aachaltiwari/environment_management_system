@@ -1,7 +1,7 @@
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Route
-from app.schemas.user import LoginRequest
+# from app.schemas.user import LoginRequest
 from app.core.security import verify_password, create_access_token, create_refresh_token
 from app.core.security import decode_token
 from jose import JWTError
