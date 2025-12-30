@@ -6,7 +6,7 @@ authors = [
     {name = "aachaltiwari",email = "mail2aachal@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12, <4"
 dependencies = [
     "annotated-types (==0.7.0)",
     "anyio (==4.12.0)",
@@ -25,7 +25,9 @@ dependencies = [
     "uvicorn (==0.40.0)",
     "pydantic-settings (>=2.12.0,<3.0.0)",
     "python-jose[cryptography] (>=3.5.0,<4.0.0)",
-    "passlib[argon2] (>=1.7.4,<2.0.0)"
+    "passlib[argon2] (>=1.7.4,<2.0.0)",
+    "ariadne (>=0.26.2,<0.27.0)",
+    
 ]
 
 
