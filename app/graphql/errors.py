@@ -1,4 +1,5 @@
 from graphql import GraphQLError
+from enum import StrEnum
 
 
 class AuthenticationError(GraphQLError):
@@ -14,4 +15,12 @@ class AuthorizationError(GraphQLError):
         super().__init__(
             message,
             extensions={"code": "FORBIDDEN"},
+        )
+
+
+class UserInputError(GraphQLError):
+    def __init__(self, message):
+        super().__init__(
+            message,
+            extensions={"code": "BAD_USER_INPUT"},
         )

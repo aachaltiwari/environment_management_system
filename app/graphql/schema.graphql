@@ -1,0 +1,56 @@
+enum UserRole {
+  ADMIN
+  TEAM_LEAD
+  DEVELOPER
+  DEVOPS
+  QA
+}
+
+type AuthPayload {
+    accessToken: String!
+    refreshToken: String!
+}
+
+type AccessTokenPayload {
+    accessToken: String!
+}
+
+
+input CreateUserInput {
+  email: String!
+  name: String!
+  role: UserRole!
+  password: String!
+}
+
+type User {
+  id: ID!
+  email: String!
+  name: String!
+  role: UserRole!
+  isActive: Boolean!
+}
+
+
+
+##### QUERY ########
+
+type Query {
+
+    #Users
+    me: User
+    users: [User!]!
+
+    }
+
+
+##### MUTATION #######
+
+type Mutation {
+
+    #Users    
+    login(email: String!, password: String!): AuthPayload!
+    refreshToken(refreshToken: String!): AccessTokenPayload!
+    createUser(input:CreateUserInput!): User!
+    setUserActive(userId: ID!, isActive: Boolean!): User!
+    }
