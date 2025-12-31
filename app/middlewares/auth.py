@@ -4,7 +4,6 @@ from jose import JWTError
 
 from app.core.security import decode_token
 
-
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         request.state.user = None

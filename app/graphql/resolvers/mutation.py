@@ -3,11 +3,15 @@ from bson import ObjectId
 from jose import JWTError
 
 from app.core.security import (
+    hash_password,
     verify_password,
     create_access_token,
     create_refresh_token,
     decode_token,
 )
+from app.graphql.decorators import requires_admin
+from app.models.user import UserRole
+from app.graphql.errors import UserInputError
 
 mutation = MutationType()
 
@@ -57,3 +61,56 @@ async def resolve_refresh(_, info, refreshToken):
     }
 
 
+@mutation.field("createUser")
+@requires_admin
+async def resolve_create_user(_, info, input):
+    db = info.context["db"]
+
+    email = input["email"].lower()
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise UserInputError("User with this email already exists")
+
+    if input["role"] not in UserRole.__members__:
+        raise UserInputError("Invalid role")
+
+    user = {
+        "email": email,
+        "name": input["name"],
+        "role": input["role"],
+        "password_hash": hash_password(input["password"]),
+        "is_active": True,
+    }
+
+    result = await db.users.insert_one(user)
+
+    return {
+        "id": str(result.inserted_id),
+        "email": user["email"],
+        "name": user["name"],
+        "role": user["role"],
+        "isActive": user["is_active"],
+    }
+
+
+@mutation.field("setUserActive")
+@requires_admin
+async def resolve_set_user_active(_, info, userId, isActive):
+    db = info.context["db"]
+
+    result = await db.users.find_one_and_update(
+        {"_id": ObjectId(userId)},
+        {"$set": {"is_active": isActive}},
+        return_document=True,
+    )
+
+    if not result:
+        raise ValueError("User not found")
+
+    return {
+        "id": str(result["_id"]),
+        "email": result["email"],
+        "name": result["name"],
+        "role": result["role"],
+        "isActive": result["is_active"],
+    }
