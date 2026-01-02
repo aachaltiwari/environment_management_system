@@ -11,18 +11,23 @@ from app.core.security import (
 )
 from app.graphql.decorators import requires_admin
 from app.models.user import UserRole
-from app.graphql.errors import UserInputError
+from app.graphql.errors import UserInputError, AuthenticationError
 
 mutation = MutationType()
 
+##### login mutation #####
+
 @mutation.field("login")
-async def resolve_login(_, info, email, password):                                  
+async def resolve_login(_, info, email, password):
     db = info.context["db"]
 
     user = await db.users.find_one({"email": email})
 
     if not user or not verify_password(password, user["password_hash"]):
-        raise Exception("Invalid credentials")
+        raise AuthenticationError("Invalid email or password")
+
+    if not user.get("is_active", False):
+        raise AuthenticationError("User account is inactive")
 
     return {
         "accessToken": create_access_token(
@@ -33,26 +38,25 @@ async def resolve_login(_, info, email, password):
         ),
     }
 
+##### refreshToken mutation #####
 
 @mutation.field("refreshToken")
 async def resolve_refresh(_, info, refreshToken):
     try:
         payload = decode_token(refreshToken)
     except JWTError:
-        raise Exception("Invalid refresh token")
+        raise AuthenticationError("Invalid refresh token")
 
     if payload.get("token_type") != "refresh":
-        raise Exception("Invalid token type")
+        raise AuthenticationError("Invalid token type")
 
     user_id = payload.get("sub")
     db = info.context["db"]
 
-    user = await db.users.find_one(
-        {"_id": ObjectId(user_id)}
-    )
+    user = await db.users.find_one({"_id": ObjectId(user_id)})
 
-    if not user or not user.get("is_active"):
-        raise Exception("User not found or inactive")
+    if not user or not user.get("is_active", False):
+        raise AuthenticationError("User not found or inactive")
 
     return {
         "accessToken": create_access_token(
@@ -60,6 +64,8 @@ async def resolve_refresh(_, info, refreshToken):
         )
     }
 
+
+##### createUser mutation #####
 
 @mutation.field("createUser")
 @requires_admin
@@ -92,6 +98,8 @@ async def resolve_create_user(_, info, input):
         "isActive": user["is_active"],
     }
 
+
+##### setUserActive mutation #####
 
 @mutation.field("setUserActive")
 @requires_admin

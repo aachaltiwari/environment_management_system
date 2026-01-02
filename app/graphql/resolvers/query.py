@@ -17,7 +17,7 @@ async def resolve_me(_, info):
 
 
 @query.field("users")
-@requires_admin
+# @requires_admin
 async def resolve_users(_, info):
     db = info.context["db"]
 
