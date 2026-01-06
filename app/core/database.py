@@ -9,6 +9,18 @@ async def connect_mongo(app):
     print("MongoDB connected")
 
 
+    await app.state.db.integrations.create_index(
+        [("name", 1)],
+        unique=True)
+
+    await app.state.db.user_integrations.create_index(
+    [
+        ("user_id", 1),
+        ("integration_id", 1),
+    ],
+    unique=True
+    )
+
 async def close_mongo(app):
     client = getattr(app.state, "mongo_client", None)
     if client:

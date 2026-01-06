@@ -1,6 +1,8 @@
 from ariadne import MutationType
 from bson import ObjectId
+from bson.errors import InvalidId
 from jose import JWTError
+from datetime import datetime
 
 from app.core.security import (
     hash_password,
@@ -9,9 +11,12 @@ from app.core.security import (
     create_refresh_token,
     decode_token,
 )
-from app.graphql.decorators import requires_admin
+from app.graphql.decorators import requires_admin, requires_integration_creation, requires_integration_management
 from app.models.user import UserRole
 from app.graphql.errors import UserInputError, AuthenticationError
+
+from pymongo.errors import DuplicateKeyError
+
 
 mutation = MutationType()
 
@@ -122,3 +127,181 @@ async def resolve_set_user_active(_, info, userId, isActive):
         "role": result["role"],
         "isActive": result["is_active"],
     }
+
+
+##### create integration mutation #####
+
+@mutation.field("createIntegration")
+@requires_integration_creation
+async def resolve_create_integration(_, info, input):
+    db = info.context["db"]
+
+    integration = {
+        "name": input["name"].strip(),
+        "description": input.get("description"),
+        "created_by": info.context["user"]["_id"],
+        "created_at": datetime.utcnow(),
+    }
+
+    try:
+        result = await db.integrations.insert_one(integration)
+    except DuplicateKeyError:
+        raise UserInputError(
+            "Integration with this name already exists"
+        )
+    
+    if input.get("assignedUserId"):
+        try:
+            await db.user_integrations.insert_one({
+                "user_id": ObjectId(input["assignedUserId"]),
+                "integration_id": result.inserted_id,
+                "assigned_at": datetime.utcnow(),
+            })
+        
+        except Exception:
+            raise UserInputError("Assigned user does not exist. Integration is created")
+        
+
+    return {
+        "id": str(result.inserted_id),
+        "name": integration["name"],
+        "description": integration["description"],
+        "createdBy": str(integration["created_by"]),
+        "createdAt": integration["created_at"].isoformat(),
+    }
+
+
+
+##### assignUserToIntegration mutation #####
+@mutation.field("assignUserToIntegration")
+@requires_integration_management
+async def resolve_assign_user(_, info, integrationId, userId):
+    db = info.context["db"]
+
+    # Validate ObjectIds
+    try:
+        integration_oid = ObjectId(integrationId)
+    except InvalidId:
+        raise UserInputError("Invalid integration ID")
+
+    try:
+        user_oid = ObjectId(userId)
+    except InvalidId:
+        raise UserInputError("Invalid user ID")
+
+    # Validate integration exists
+    integration = await db.integrations.find_one({
+        "_id": integration_oid
+    })
+    if not integration:
+        raise UserInputError("Integration does not exist")
+
+    # Validate user exists
+    user = await db.users.find_one({
+        "_id": user_oid
+    })
+    if not user:
+        raise UserInputError("User does not exist")
+
+    # Assign user (DB enforces uniqueness)
+    try:
+        await db.user_integrations.insert_one({
+            "user_id": user_oid,
+            "integration_id": integration_oid,
+            "assigned_at": datetime.utcnow(),
+        })
+    except DuplicateKeyError:
+        raise UserInputError("User already assigned to this integration")
+
+    return True
+
+
+##### updateIntegration mutation #####
+@mutation.field("updateIntegration")
+@requires_integration_management
+async def resolve_update_integration(_, info, integrationId, input):
+    db = info.context["db"]
+
+    #Check integration exists
+    integration = await db.integrations.find_one({
+        "_id": ObjectId(integrationId)
+    })
+    if not integration:
+        raise UserInputError("Integration does not exist")
+
+    update = {}
+    if input.get("name"):
+        update["name"] = input["name"]
+    if input.get("description") is not None:
+        update["description"] = input["description"]
+
+    if not update:
+        raise UserInputError("Nothing to update")
+
+    await db.integrations.update_one(
+        {"_id": ObjectId(integrationId)},
+        {"$set": update},
+    )
+
+    integ = await db.integrations.find_one({
+        "_id": ObjectId(integrationId)
+    })
+
+    return {
+        "id": str(integ["_id"]),
+        "name": integ["name"],
+        "description": integ.get("description"),
+        "createdBy": str(integ["created_by"]),
+        "createdAt": integ["created_at"].isoformat(),
+    }
+
+
+
+##### deleteIntegration mutation #####
+@mutation.field("deleteIntegration")
+@requires_integration_management
+async def resolve_delete_integration(_, info, integrationId):
+    db = info.context["db"]
+
+    #Check integration exists
+    integration = await db.integrations.find_one({
+        "_id": ObjectId(integrationId)
+    })
+    if not integration:
+        raise UserInputError("Integration does not exist")
+
+
+    await db.integrations.delete_one({
+        "_id": ObjectId(integrationId)
+    })
+
+    await db.user_integrations.delete_many({
+        "integration_id": ObjectId(integrationId)
+    })
+
+    return True
+
+
+
+#### remove user from integration mutation #####
+@mutation.field("removeUserFromIntegration")
+@requires_integration_management
+async def resolve_remove_user(_, info, integrationId, userId):
+    db = info.context["db"]
+
+    mapping = await db.user_integrations.find_one({
+        "user_id": ObjectId(userId),
+        "integration_id": ObjectId(integrationId),
+    })
+
+    if not mapping:
+        raise UserInputError(
+            "User is not assigned to this integration"
+        )
+
+    await db.user_integrations.delete_one({
+        "_id": mapping["_id"]
+    })
+
+    return True
+
