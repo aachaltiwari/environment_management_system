@@ -11,3 +11,4 @@ class IntegrationModel(MongoBaseModel):
     description: Optional[str] = None
     created_by: PyObjectId
     created_at: datetime
+    

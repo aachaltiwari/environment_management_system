@@ -7,9 +7,16 @@ from app.permissions.user import can_manage_users
 def requires_auth(resolver):
     @wraps(resolver)
     async def wrapper(parent, info, **kwargs):
-        if not info.context["user"]:
-            raise AuthenticationError()
+        user = info.context.get("user")
+
+        if not user:
+            raise AuthenticationError("Authentication required")
+
+        if not user.get("is_active"):
+            raise AuthenticationError("User account is inactive")
+
         return await resolver(parent, info, **kwargs)
+
     return wrapper
 
 
@@ -18,10 +25,13 @@ def requires_auth(resolver):
 def requires_admin(resolver):
     @wraps(resolver)
     async def wrapper(parent, info, **kwargs):
-        user = info.context["user"]
+        user = info.context.get("user")
 
         if not user:
-            raise AuthenticationError()
+            raise AuthenticationError("Authentication required")
+
+        if not user.get("is_active"):
+            raise AuthenticationError("User account is inactive")
 
         if not can_manage_users(user):
             raise AuthorizationError("Admin access required")
@@ -39,6 +49,10 @@ def requires_integration_creation(resolver):
 
         if not user:
             raise AuthenticationError()
+        
+        if not user.get("is_active"):
+            raise AuthenticationError("User account is inactive")
+
 
         allowed = await can_create_integration(user)
         if not allowed:
@@ -59,6 +73,10 @@ def requires_integration_management(resolver):
 
         if not user:
             raise AuthenticationError()
+        
+        if not user.get("is_active"):
+            raise AuthenticationError("User account is inactive")
+
 
         allowed = await can_manage_integration(db, user, integrationId)
         if not allowed:
