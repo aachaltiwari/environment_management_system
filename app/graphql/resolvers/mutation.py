@@ -181,13 +181,9 @@ async def resolve_assign_user(_, info, integrationId, userId):
     # Validate ObjectIds
     try:
         integration_oid = ObjectId(integrationId)
-    except InvalidId:
-        raise UserInputError("Invalid integration ID")
-
-    try:
         user_oid = ObjectId(userId)
     except InvalidId:
-        raise UserInputError("Invalid user ID")
+        raise UserInputError("Invalid user/integration ID")
 
     # Validate integration exists
     integration = await db.integrations.find_one({
@@ -232,7 +228,7 @@ async def resolve_update_integration(_, info, integrationId, input):
     update = {}
     if input.get("name"):
         update["name"] = input["name"]
-    if input.get("description") is not None:
+    if input.get("description"):
         update["description"] = input["description"]
 
     if not update:
