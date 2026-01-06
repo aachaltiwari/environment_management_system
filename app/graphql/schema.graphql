@@ -32,6 +32,26 @@ type User {
 }
 
 
+type Integration {
+  id: ID!
+  name: String!
+  description: String
+  createdBy: ID!
+  createdAt: String!
+}
+
+input CreateIntegrationInput {
+  name: String!
+  description: String
+  assignedUserId: ID
+}
+
+input UpdateIntegrationInput {
+  name: String
+  description: String
+}
+
+
 
 ##### QUERY ########
 
@@ -40,6 +60,10 @@ type Query {
     #Users
     me: User
     users: [User!]!
+
+    #Integration
+    integrations: [Integration!]!
+    integration(integrationId: ID!): Integration
 
     }
 
@@ -53,4 +77,12 @@ type Mutation {
     refreshToken(refreshToken: String!): AccessTokenPayload!
     createUser(input:CreateUserInput!): User!
     setUserActive(userId: ID!, isActive: Boolean!): User!
+
+    #integrations
+    createIntegration(input: CreateIntegrationInput!): Integration!
+    updateIntegration(integrationId: ID!, input: UpdateIntegrationInput!): Integration!
+    deleteIntegration(integrationId: ID!): Boolean!
+    assignUserToIntegration(integrationId: ID! userId: ID!): Boolean!
+    removeUserFromIntegration(integrationId: ID! userId: ID!): Boolean!
+
     }

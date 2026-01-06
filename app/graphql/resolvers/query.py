@@ -1,4 +1,5 @@
 from ariadne import QueryType
+from bson import ObjectId
 from app.graphql.decorators import requires_admin, requires_auth
 
 query = QueryType()
@@ -33,3 +34,44 @@ async def resolve_users(_, info):
         }
         for u in users
     ]
+
+
+@query.field("integrations")
+@requires_auth
+async def resolve_integrations(_, info):
+    db = info.context["db"]
+
+    integrations = []
+
+    cursor = db.integrations.find()
+    async for integ in cursor:
+        integrations.append({
+            "id": str(integ["_id"]),
+            "name": integ["name"],
+            "description": integ.get("description"),
+            "createdBy": str(integ["created_by"]),
+            "createdAt": integ["created_at"].isoformat(),
+        })
+
+    return integrations
+
+
+@query.field("integration")
+@requires_auth
+async def resolve_integration(_, info, integrationId):
+    db = info.context["db"]
+
+    integ = await db.integrations.find_one({
+        "_id": ObjectId(integrationId)
+    })
+
+    if not integ:
+        return None
+
+    return {
+        "id": str(integ["_id"]),
+        "name": integ["name"],
+        "description": integ.get("description"),
+        "createdBy": str(integ["created_by"]),
+        "createdAt": integ["created_at"].isoformat(),
+    }
