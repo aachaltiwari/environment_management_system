@@ -1,5 +1,7 @@
 import asyncio
 
+from loguru import logger
+
 from app.core import database
 from app.core.security import hash_password
 from app.models.user import UserRole
@@ -11,14 +13,14 @@ ADMIN_PASSWORD = "admin123"   # keep literal for now
 async def create_admin():
     await database.connect_mongo()
 
-    print("DEBUG password bytes:", len(ADMIN_PASSWORD.encode("utf-8")))
+    logger.info("DEBUG password bytes:", len(ADMIN_PASSWORD.encode("utf-8")))
 
     existing_admin = await database.db.users.find_one(
         {"role": UserRole.ADMIN}
     )
 
     if existing_admin:
-        print("Admin already exists")
+        logger.info("Admin already exists")
         await database.close_mongo()
         return
 
@@ -30,7 +32,7 @@ async def create_admin():
         "is_active": True,
     })
 
-    print("Admin created")
+    logger.info("Admin created")
     await database.close_mongo()
 
 

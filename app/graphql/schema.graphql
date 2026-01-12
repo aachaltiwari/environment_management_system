@@ -21,7 +21,14 @@ input CreateUserInput {
   name: String!
   role: UserRole!
   password: String!
+} 
+
+input UpdateUserInput {
+  name: String
+  role: UserRole
+  isActive: Boolean
 }
+
 
 type User {
   id: ID!
@@ -38,6 +45,7 @@ type Integration {
   description: String
   createdBy: ID!
   createdAt: String!
+  isDeleted: Boolean!
 }
 
 input CreateIntegrationInput {
@@ -64,6 +72,7 @@ type Query {
     #Integration
     integrations: [Integration!]!
     integration(integrationId: ID!): Integration
+    userIntegrations(userId: ID!): [Integration!]!
 
     }
 
@@ -76,7 +85,8 @@ type Mutation {
     login(email: String!, password: String!): AuthPayload!
     refreshToken(refreshToken: String!): AccessTokenPayload!
     createUser(input:CreateUserInput!): User!
-    setUserActive(userId: ID!, isActive: Boolean!): User!
+    updateUser(userId: ID!, input: UpdateUserInput!): User!
+
 
     #integrations
     createIntegration(input: CreateIntegrationInput!): Integration!

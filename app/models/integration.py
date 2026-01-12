@@ -11,4 +11,5 @@ class IntegrationModel(MongoBaseModel):
     description: Optional[str] = None
     created_by: PyObjectId
     created_at: datetime
-    
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None

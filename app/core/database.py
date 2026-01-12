@@ -1,12 +1,14 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
 
+from loguru import logger
+
 
 async def connect_mongo(app):
     client = AsyncIOMotorClient(settings.mongo_uri)
     app.state.mongo_client = client
     app.state.db = client[settings.mongo_db]
-    print("MongoDB connected")
+    logger.info("MongoDB connected")
 
 
     await app.state.db.integrations.create_index(
@@ -25,4 +27,5 @@ async def close_mongo(app):
     client = getattr(app.state, "mongo_client", None)
     if client:
         client.close()
-        print("MongoDB disconnected")
+        logger.info("MongoDB disconnected")
+        
