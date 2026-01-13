@@ -1,6 +1,7 @@
 from ariadne import QueryType
-from bson import ObjectId
-from app.graphql.decorators import requires_admin, requires_auth
+from app.graphql.decorators import requires_auth
+from app.services import user_service
+from app.services import integration_service
 from app.utils.objectid import parse_object_id
 
 query = QueryType()
@@ -9,7 +10,10 @@ query = QueryType()
 @query.field("me")
 @requires_auth
 async def resolve_me(_, info):
-    user = info.context["user"]
+    user = await user_service.get_current_user(
+        info.context["user"]
+    )
+
     return {
         "id": str(user["_id"]),
         "email": user["email"],
@@ -19,11 +23,10 @@ async def resolve_me(_, info):
 
 
 @query.field("users")
-# @requires_admin
 async def resolve_users(_, info):
-    db = info.context["db"]
-
-    users = await db.users.find({"is_active": True}).to_list(length=None)
+    users = await user_service.list_active_users(
+        info.context["db"]
+    )
 
     return [
         {
@@ -37,80 +40,46 @@ async def resolve_users(_, info):
     ]
 
 
+
+# -------------------------
+# ALL INTEGRATIONS
+# -------------------------
+
 @query.field("integrations")
 @requires_auth
 async def resolve_integrations(_, info):
-    db = info.context["db"]
+    return await integration_service.get_integrations(
+        info.context["db"]
+    )
 
-    integrations = []
 
-    cursor = db.integrations.find({"is_deleted": False})
-    async for integ in cursor:
-        integrations.append({
-            "id": str(integ["_id"]),
-            "name": integ["name"],
-            "description": integ.get("description"),
-            "createdBy": str(integ["created_by"]),
-            "createdAt": integ["created_at"].isoformat(),
-        })
-
-    return integrations
-
+# -------------------------
+# SINGLE INTEGRATION
+# -------------------------
 
 @query.field("integration")
 @requires_auth
 async def resolve_integration(_, info, integrationId):
-    db = info.context["db"]
-    # breakpoint()
+    integration_oid = parse_object_id(
+        integrationId, "integrationId"
+    )
 
-    integ = await db.integrations.find_one({
-        "_id": parse_object_id(integrationId, "integrationId"),
-        "is_deleted": False,
-    })
+    return await integration_service.get_integration_by_id(
+        info.context["db"],
+        integration_oid,
+    )
 
-    if not integ:
-        return None
 
-    return {
-        "id": str(integ["_id"]),
-        "name": integ["name"],
-        "description": integ.get("description"),
-        "createdBy": str(integ["created_by"]),
-        "createdAt": integ["created_at"].isoformat(),
-    }
+# -------------------------
+# USER → INTEGRATIONS
+# -------------------------
 
-### get integration of particular user #####
 @query.field("userIntegrations")
 @requires_auth
 async def resolve_user_integrations(_, info, userId):
-    db = info.context["db"]
-
     user_oid = parse_object_id(userId, "userId")
 
-    # Validate user exists
-    user = await db.users.find_one({
-        "_id": user_oid, "is_active": True
-    })
-    if not user:
-        return ("user is either non-existent or inactive")
-
-    integrations = []
-
-    cursor = db.user_integrations.find({
-        "user_id": user_oid
-    })
-    async for mapping in cursor:
-        integ = await db.integrations.find_one({
-            "_id": mapping["integration_id"],
-            "is_deleted": False,
-        })
-        if integ:
-            integrations.append({
-                "id": str(integ["_id"]),
-                "name": integ["name"],
-                "description": integ.get("description"),
-                "createdBy": str(integ["created_by"]),
-                "createdAt": integ["created_at"].isoformat(),
-            })
-
-    return integrations
+    return await integration_service.get_user_integrations(
+        info.context["db"],
+        user_oid,
+    )

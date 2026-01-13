@@ -23,3 +23,10 @@ class UserInputError(GraphQLError):
             message,
             extensions={"code": "BAD_USER_INPUT"},
         )
+
+class InternalServerError(GraphQLError):
+    def __init__(self, message="Internal server error"):
+        super().__init__(
+            message,
+            extensions={"code": "INTERNAL_SERVER_ERROR"},
+        )
