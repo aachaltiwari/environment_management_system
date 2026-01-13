@@ -17,7 +17,8 @@ class EnvironmentModel(MongoBaseModel):
 
     title: str = Field(..., min_length=2)
     content: Dict[str, Any]
-
+    note : str | None = None
+    
     created_by: PyObjectId
     updated_by: PyObjectId
 
