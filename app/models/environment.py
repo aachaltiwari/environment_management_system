@@ -6,7 +6,6 @@ from typing import Any, Dict
 
 class EnvironmentTypeModel(MongoBaseModel):
     name: str = Field(..., min_length=2)
-    description: str | None = None
     created_at: datetime
 
 
@@ -18,7 +17,7 @@ class EnvironmentModel(MongoBaseModel):
     title: str = Field(..., min_length=2)
     content: Dict[str, Any]
     note : str | None = None
-    
+
     created_by: PyObjectId
     updated_by: PyObjectId
 

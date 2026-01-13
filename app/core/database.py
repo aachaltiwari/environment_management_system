@@ -14,6 +14,7 @@ async def connect_mongo(app):
     await app.state.db.integrations.create_index(
         [("name", 1)],
         unique=True)
+    
 
     await app.state.db.user_integrations.create_index(
     [
@@ -22,6 +23,22 @@ async def connect_mongo(app):
     ],
     unique=True
     )
+
+
+    await app.state.db.environment_types.create_index(
+    [("name", 1)],
+    unique=True
+)
+    
+    await app.state.db.environments.create_index(
+    [
+        ("integration_id", 1),
+        ("environment_type", 1),
+    ],
+    unique=True
+)
+
+
 
 async def close_mongo(app):
     client = getattr(app.state, "mongo_client", None)
