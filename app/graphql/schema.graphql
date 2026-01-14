@@ -16,6 +16,15 @@ type AccessTokenPayload {
 }
 
 
+type User {
+  id: ID!
+  email: String!
+  name: String!
+  role: UserRole!
+  isActive: Boolean!
+}
+
+
 input CreateUserInput {
   email: String!
   name: String!
@@ -27,15 +36,6 @@ input UpdateUserInput {
   name: String
   role: UserRole
   isActive: Boolean
-}
-
-
-type User {
-  id: ID!
-  email: String!
-  name: String!
-  role: UserRole!
-  isActive: Boolean!
 }
 
 
@@ -60,6 +60,28 @@ input UpdateIntegrationInput {
 }
 
 
+type EnvironmentType {
+  id: ID!
+  name: String!
+  createdAt: String!
+}
+
+
+type Environment {
+  id: ID!
+  integrationId: ID!
+  environmentType: String!
+  title: String!
+  content: JSON!
+  createdBy: ID!
+  updatedBy: ID!
+  createdAt: String!
+  updatedAt: String!
+}
+
+
+
+
 
 ##### QUERY ########
 
@@ -73,6 +95,11 @@ type Query {
     integrations: [Integration!]!
     integration(integrationId: ID!): Integration
     userIntegrations(userId: ID!): [Integration!]!
+
+    #environment
+    environments(integrationId: ID!): [Environment!]!
+    environment(environmentId: ID!): Environment
+
 
     }
 
@@ -94,5 +121,15 @@ type Mutation {
     deleteIntegration(integrationId: ID!): Boolean!
     assignUserToIntegration(integrationId: ID! userId: ID!): Boolean!
     removeUserFromIntegration(integrationId: ID! userId: ID!): Boolean!
+
+
+    # Environment Type
+    createEnvironmentType(name: String!): Boolean!
+
+
+    # Environment
+    createEnvironment(integrationId: ID! input: CreateEnvironmentInput!): Environment!
+    updateEnvironment(integrationId: ID! environmentId: ID! input: UpdateEnvironmentInput! ): Environment!
+    deleteEnvironment(integrationId: ID! environmentId: ID! ): Boolean!
 
     }
