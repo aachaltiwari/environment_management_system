@@ -1,17 +1,19 @@
-from bson import ObjectId
-from app.permissions.base import is_admin
+from app.models.user import UserRole
 
 
-async def can_access_environment(db,user: dict,environment_id: str) -> bool:
+def can_manipulate_environment(user: dict, is_assigned: bool) -> bool:
     if not user:
         return False
 
-    if is_admin(user):
+    # Admin & Team Lead → always write
+    if user["role"] in {
+        UserRole.ADMIN.value,
+        UserRole.TEAM_LEAD.value,
+    }:
         return True
 
-    env = await db.environments.find_one({"_id": ObjectId(environment_id) })
+    # Developer → write only if assigned
+    if user["role"] == UserRole.DEVELOPER.value and is_assigned:
+        return True
 
-    if not env:
-        return False
-
-    return user["_id"] in env.get("allowed_users", [])
+    return False
