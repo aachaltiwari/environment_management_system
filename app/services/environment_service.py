@@ -61,8 +61,10 @@ async def create_environment(db, user, integration_id, data):
 
 
 ##### update environment service function #####
-async def update_environment(db, user, environment_id, data):
+async def update_environment(db, user, integration_id, environment_id, data
+):
     env_oid = parse_object_id(environment_id, "environmentId")
+    integration_oid = parse_object_id(integration_id, "integrationId")
 
     update = {
         "updated_by": user["_id"],
@@ -78,21 +80,34 @@ async def update_environment(db, user, environment_id, data):
     if len(update) == 2:
         raise UserInputError("Nothing to update")
 
+   
     env = await db.environments.find_one_and_update(
-        {"_id": env_oid},
+        {
+            "_id": env_oid,
+            "integration_id": integration_oid,
+        },
         {"$set": update},
         return_document=True,
     )
 
     if not env:
-        raise UserInputError("Environment not found")
+        raise UserInputError(
+            "Environment not found for this integration"
+        )
 
     return env
 
 
 ##### delete environment service function #####
-async def delete_environment(db, environment_id):
+async def delete_environment(db, environment_id, integration_id):
     env_oid = parse_object_id(environment_id, "environmentId")
+    integration_oid = parse_object_id(integration_id, "integrationId")
+
+    if not await db.environments.find_one({
+        "_id": env_oid,
+        "integration_id": integration_oid,
+    }):
+        raise UserInputError("Environment not found for this integration")
 
     result = await db.environments.delete_one({"_id": env_oid})
 
