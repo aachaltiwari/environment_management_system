@@ -1,3 +1,6 @@
+scalar JSON
+
+
 enum UserRole {
   ADMIN
   TEAM_LEAD
@@ -78,6 +81,20 @@ type Environment {
   createdAt: String!
   updatedAt: String!
 }
+
+
+input CreateEnvironmentInput {
+  environmentType: String!
+  title: String!
+  content: JSON!
+}
+
+
+input UpdateEnvironmentInput {
+  title: String
+  content: JSON 
+}
+
 
 
 
