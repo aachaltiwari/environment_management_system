@@ -1,8 +1,8 @@
 from ariadne.asgi import GraphQL
 from app.graphql.context import get_context_value
 from ariadne import ScalarType, load_schema_from_path, make_executable_schema
-from app.graphql.resolvers.query import query
-from app.graphql.resolvers.mutation import mutation
+from app.graphql.resolvers import queries, mutations
+
 import json
 
 type_defs = load_schema_from_path("app/graphql/schema.graphql") 
@@ -19,8 +19,9 @@ def parse_json_value(value):
 
 schema = make_executable_schema(
     type_defs,
-    query,
-    mutation, json_scalar
+    queries,
+    mutations, 
+    json_scalar
 )
 
 

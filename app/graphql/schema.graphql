@@ -67,6 +67,12 @@ type EnvironmentType {
   id: ID!
   name: String!
   createdAt: String!
+  createdBy: String!
+}
+
+
+input CreateEnvironmentTypeInput {
+  name: String!
 }
 
 
@@ -117,6 +123,10 @@ type Query {
     environments(integrationId: ID!): [Environment!]!
     environment(environmentId: ID!): Environment
 
+    #environment_types
+    environmentTypes: [EnvironmentType!]
+
+
 
     }
 
@@ -141,7 +151,7 @@ type Mutation {
 
 
     # Environment Type
-    createEnvironmentType(name: String!): Boolean!
+    createEnvironmentType(input: CreateEnvironmentTypeInput!): EnvironmentType!
 
 
     # Environment

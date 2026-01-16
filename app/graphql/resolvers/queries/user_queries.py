@@ -1,0 +1,52 @@
+from ariadne import QueryType
+from graphql import GraphQLError
+from app.graphql.decorators import requires_auth
+from app.graphql.errors import InternalServerError
+from app.services import user_service
+
+query = QueryType()
+
+@query.field("me")
+@requires_auth
+async def resolve_me(_, info):
+    try:
+        user = await user_service.get_current_user(
+            info.context["user"]
+        )
+
+        return {
+            "id": str(user["_id"]),
+            "email": user["email"],
+            "name": user["name"],
+            "role": user["role"],
+        }
+    except GraphQLError:
+        raise
+    except Exception as e:
+        raise InternalServerError("An error occurred fetching current user") from e
+
+
+
+@query.field("users")
+@requires_auth
+async def resolve_users(_, info):
+    try:
+        users = await user_service.list_active_users(
+            info.context["db"]
+        )
+
+        return [
+            {
+                "id": str(u["_id"]),
+                "email": u["email"],
+                "name": u["name"],
+                "role": u["role"],
+                "isActive": u["is_active"],
+            }
+            for u in users
+        ]
+    except GraphQLError:
+        raise
+    except Exception as e:
+        raise InternalServerError("An error occurred fetching users") from e
+
