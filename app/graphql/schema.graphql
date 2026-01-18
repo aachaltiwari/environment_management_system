@@ -27,6 +27,14 @@ type User {
   isActive: Boolean!
 }
 
+type UserPage {
+  items: [User!]!
+  page: Int!
+  pageSize: Int!
+  totalItems: Int!
+  totalPages: Int!
+}
+
 
 input CreateUserInput {
   email: String!
@@ -112,7 +120,8 @@ type Query {
 
     #Users
     me: User
-    users: [User!]!
+    users(page: Int = 1 search: String): UserPage!
+
 
     #Integration
     integrations: [Integration!]!

@@ -22,15 +22,51 @@ async def get_current_user(user: dict) -> dict:
     return user
 
 
-async def list_active_users(db) -> List[dict]:
-    """
-    Returns all active users
-    """
-    users = await db.users.find(
-        {"is_active": True}
-    ).to_list(length=None)
 
-    return users
+from math import ceil
+from typing import Optional
+
+PAGE_SIZE = 10
+
+
+async def list_active_users(
+    db,
+    page: int = 1,
+    search: Optional[str] = None,
+):
+    if page < 1:
+        page = 1
+
+    query = {"is_active": True}
+
+    # 🔍 Search by name (case-insensitive)
+    if search:
+        query["name"] = {
+            "$regex": search,
+            "$options": "i",
+        }
+
+    skip = (page - 1) * PAGE_SIZE
+
+    cursor = (
+        db.users
+        .find(query)
+        .skip(skip)
+        .limit(PAGE_SIZE)
+        .sort("name", 1)
+    )
+
+    users = await cursor.to_list(length=PAGE_SIZE)
+    total_items = await db.users.count_documents(query)
+
+    return {
+        "items": users,
+        "page": page,
+        "pageSize": PAGE_SIZE,
+        "totalItems": total_items,
+        "totalPages": ceil(total_items / PAGE_SIZE) if total_items else 1,
+    }
+
 
 
 

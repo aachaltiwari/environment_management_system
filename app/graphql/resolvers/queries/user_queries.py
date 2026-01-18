@@ -29,24 +29,32 @@ async def resolve_me(_, info):
 
 @query.field("users")
 @requires_auth
-async def resolve_users(_, info):
+async def resolve_users(_, info, page=1, search=None):
     try:
-        users = await user_service.list_active_users(
-            info.context["db"]
+        result = await user_service.list_active_users(
+            db=info.context["db"],
+            page=page,
+            search=search,
         )
 
-        return [
-            {
-                "id": str(u["_id"]),
-                "email": u["email"],
-                "name": u["name"],
-                "role": u["role"],
-                "isActive": u["is_active"],
-            }
-            for u in users
-        ]
+        return {
+            "items": [
+                {
+                    "id": str(u["_id"]),
+                    "email": u["email"],
+                    "name": u["name"],
+                    "role": u["role"],
+                    "isActive": u["is_active"],
+                }
+                for u in result["items"]
+            ],
+            "page": result["page"],
+            "pageSize": result["pageSize"],
+            "totalItems": result["totalItems"],
+            "totalPages": result["totalPages"],
+        }
+
     except GraphQLError:
         raise
     except Exception as e:
         raise InternalServerError("An error occurred fetching users") from e
-
