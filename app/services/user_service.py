@@ -13,6 +13,9 @@ from app.core.security import (
 from app.models.user import UserRole
 from app.graphql.errors import UserInputError, AuthenticationError
 
+from math import ceil
+from typing import Optional
+
 
 ###### services for user queries ######
 async def get_current_user(user: dict) -> dict:
@@ -22,49 +25,50 @@ async def get_current_user(user: dict) -> dict:
     return user
 
 
-
-from math import ceil
-from typing import Optional
-
-PAGE_SIZE = 10
-
+####### user listing with pagination and search ######
 
 async def list_active_users(
     db,
-    page: int = 1,
+    page: int,
+    pageSize: int,
     search: Optional[str] = None,
 ):
     if page < 1:
         page = 1
 
+    if pageSize < 1:
+        pageSize = 10
+    elif pageSize > 500:
+        pageSize = 500
+
     query = {"is_active": True}
 
-    # 🔍 Search by name (case-insensitive)
+    # Search by name (case-insensitive)
     if search:
         query["name"] = {
             "$regex": search,
             "$options": "i",
         }
 
-    skip = (page - 1) * PAGE_SIZE
+    skip = (page - 1) * pageSize
 
     cursor = (
         db.users
         .find(query)
         .skip(skip)
-        .limit(PAGE_SIZE)
+        .limit(pageSize)
         .sort("name", 1)
     )
 
-    users = await cursor.to_list(length=PAGE_SIZE)
+    users = await cursor.to_list(length=pageSize)
     total_items = await db.users.count_documents(query)
 
     return {
         "items": users,
         "page": page,
-        "pageSize": PAGE_SIZE,
+        "pageSize": pageSize,
         "totalItems": total_items,
-        "totalPages": ceil(total_items / PAGE_SIZE) if total_items else 1,
+        "totalPages": ceil(total_items / pageSize) if total_items else 1,
     }
 
 
@@ -125,9 +129,6 @@ async def refresh_access_token(db, refresh_token: str):
 async def create_user(db, input_data: dict):
     email = input_data["email"].lower()
 
-    if await db.users.find_one({"email": email}):
-        raise UserInputError("User with this email already exists")
-
     if input_data["role"] not in UserRole.__members__:
         raise UserInputError("Invalid role")
 
@@ -139,7 +140,10 @@ async def create_user(db, input_data: dict):
         "is_active": True,
     }
 
-    result = await db.users.insert_one(user)
+    try:
+        result = await db.users.insert_one(user)
+    except DuplicateKeyError:
+        raise UserInputError("User with this email already exists")
 
     user["_id"] = result.inserted_id
     return user

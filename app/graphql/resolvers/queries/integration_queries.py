@@ -10,18 +10,35 @@ query = QueryType()
 # -------------------------
 # ALL INTEGRATIONS
 # -------------------------
-
 @query.field("integrations")
 @requires_auth
-async def resolve_integrations(_, info):
+async def resolve_integrations(
+    _,
+    info,
+    page=1,
+    pageSize=10,
+    search=None,
+    assignedUserId=None,
+):
     try:
-        return await integration_service.get_integrations(
-            info.context["db"]
+        assigned_user_oid = (
+            parse_object_id(assignedUserId, "assignedUserId")
+            if assignedUserId else None
         )
+
+        return await integration_service.list_integrations(
+            db=info.context["db"],
+            page=page,
+            pageSize=pageSize,
+            search=search,
+            assigned_user_id=assigned_user_oid,
+        )
+
     except GraphQLError:
         raise
     except Exception as e:
-        raise InternalServerError("An error occurred fetching integrations") from e
+        raise InternalServerError("Error fetching integrations") from e
+
     
 
 

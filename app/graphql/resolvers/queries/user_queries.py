@@ -29,11 +29,12 @@ async def resolve_me(_, info):
 
 @query.field("users")
 @requires_auth
-async def resolve_users(_, info, page=1, search=None):
+async def resolve_users(_, info, page, pageSize, search=None):
     try:
         result = await user_service.list_active_users(
             db=info.context["db"],
             page=page,
+            pageSize=pageSize,
             search=search,
         )
 

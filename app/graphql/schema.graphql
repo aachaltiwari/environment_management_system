@@ -59,6 +59,16 @@ type Integration {
   isDeleted: Boolean!
 }
 
+
+type IntegrationPagination {
+  items: [Integration!]!
+  page: Int!
+  pageSize: Int!
+  totalItems: Int!
+  totalPages: Int!
+}
+
+
 input CreateIntegrationInput {
   name: String!
   description: String
@@ -120,11 +130,11 @@ type Query {
 
     #Users
     me: User
-    users(page: Int = 1 search: String): UserPage!
+    users(page: Int = 1 pageSize: Int = 10 search: String): UserPage!
 
 
     #Integration
-    integrations: [Integration!]!
+    integrations(assignedUserId: ID page: Int = 1 pageSize: Int = 10 search: String): IntegrationPagination!
     integration(integrationId: ID!): Integration
     userIntegrations(userId: ID!): [Integration!]!
 

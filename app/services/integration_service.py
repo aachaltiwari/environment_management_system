@@ -6,22 +6,97 @@ from pymongo.errors import DuplicateKeyError
 
 from app.utils.objectid import parse_object_id
 from app.graphql.errors import UserInputError
+from math import ceil
 
 
 # -------------------------
 # LIST ALL INTEGRATIONS
 # -------------------------
 
-async def get_integrations(db)-> list[dict]:
-    integrations = []
+async def list_integrations(
+    db,
+    page: int,
+    pageSize: int,
+    search: str | None = None,
+    assigned_user_id: ObjectId | None = None,
+):
 
-    cursor = db.integrations.find({"is_deleted": False})
+    if page < 1:
+        page = 1
 
+    if pageSize < 1:
+        pageSize = 10
+    elif pageSize > 500:
+        pageSize = 500
+
+    skip = (page - 1) * pageSize
+
+    
+    query = {"is_deleted": False}
+
+    
+    if search:
+        query["name"] = {
+            "$regex": search,
+            "$options": "i",
+        }
+
+    if assigned_user_id:
+        # validate user
+        user = await db.users.find_one({
+            "_id": assigned_user_id,
+            "is_active": True,
+        })
+        if not user:
+            raise UserInputError("User is either non-existent or inactive")
+
+        mappings = await db.user_integrations.find(
+            {"user_id": assigned_user_id}
+        ).to_list(length=None)
+
+        integration_ids = [m["integration_id"] for m in mappings]
+
+        # if user has no integrations → empty result
+        if not integration_ids:
+            return {
+                "items": [],
+                "page": page,
+                "pageSize": pageSize,
+                "totalItems": 0,
+                "totalPages": 1,
+            }
+
+        query["_id"] = {"$in": integration_ids}
+
+    # fetch integrations
+    cursor = (
+        db.integrations
+        .find(query)
+        .skip(skip)
+        .limit(pageSize)
+        .sort("name", 1)
+    )
+
+    items = []
     async for integ in cursor:
-        integrations.append(_serialize_integration(integ))
+        items.append({
+            "id": str(integ["_id"]),
+            "name": integ["name"],
+            "description": integ.get("description"),
+            "createdBy": str(integ["created_by"]),
+            "createdAt": integ["created_at"].isoformat(),
+            "isDeleted": integ["is_deleted"],
+        })
 
-    return integrations
+    total_items = await db.integrations.count_documents(query)
 
+    return {
+        "items": items,
+        "page": page,
+        "pageSize": pageSize,
+        "totalItems": total_items,
+        "totalPages": ceil(total_items / pageSize) if total_items else 1,
+    }
 
 # -------------------------
 # GET SINGLE INTEGRATION
