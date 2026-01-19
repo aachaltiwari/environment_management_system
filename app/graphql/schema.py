@@ -3,8 +3,6 @@ from app.graphql.context import get_context_value
 from ariadne import ScalarType, load_schema_from_path, make_executable_schema
 from app.graphql.resolvers import queries, mutations
 
-import json
-
 type_defs = load_schema_from_path("app/graphql/schema.graphql") 
 
 json_scalar = ScalarType("JSON")

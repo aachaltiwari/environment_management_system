@@ -7,9 +7,8 @@ from app.utils.objectid import parse_object_id
 
 query = QueryType()
 
-# -------------------------
-# ALL INTEGRATIONS
-# -------------------------
+
+#### lIST INTEGRATIONS ######
 @query.field("integrations")
 @requires_auth
 async def resolve_integrations(
@@ -42,10 +41,8 @@ async def resolve_integrations(
     
 
 
-# -------------------------
-# SINGLE INTEGRATION
-# -------------------------
 
+##### GET INTEGRATION BY ID ######
 @query.field("integration")
 @requires_auth
 async def resolve_integration(_, info, integrationId):
@@ -65,10 +62,8 @@ async def resolve_integration(_, info, integrationId):
     
 
 
-# -------------------------
-# USER → INTEGRATIONS
-# -------------------------
 
+##### GET USER INTEGRATIONS ######
 @query.field("userIntegrations")
 @requires_auth
 async def resolve_user_integrations(_, info, userId):

@@ -7,9 +7,7 @@ from app.services.environment_service import get_environment, list_environments
 query = QueryType()
 
 
-# ----------------------
-# ALL ENVIRONMENTS FOR AN INTEGRATION
-# ----------------------
+##### LIST ENVIRONMENTS ######
 @query.field("environments")
 @requires_auth
 async def resolve_environments(_, info, integrationId):
@@ -36,9 +34,7 @@ async def resolve_environments(_, info, integrationId):
 
 
 
-# -------------------------
-# SINGLE ENVIRONMENT
-# -------------------------
+##### GET ENVIRONMENT BY ID ######
 @query.field("environment")
 @requires_auth
 async def resolve_environment(_, info, environmentId):

@@ -7,6 +7,7 @@ import graphql
 query = QueryType()
 
 
+##### LIST ENVIRONMENT TYPES ######
 @query.field("environmentTypes")
 @requires_auth
 async def resolve_environment_types(_, info):

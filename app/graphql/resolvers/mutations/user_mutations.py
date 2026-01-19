@@ -9,10 +9,8 @@ from bson import ObjectId
 mutation = MutationType()
 
 
-# -------------------------
-# LOGIN
-# -------------------------
 
+##### LOGIN USER ######
 @mutation.field("login")
 async def resolve_login(_, info, email, password):
     try:
@@ -27,10 +25,9 @@ async def resolve_login(_, info, email, password):
     except Exception as e:
         raise InternalServerError("An error occurred during login") from e
 
-# -------------------------
-# REFRESH TOKEN
-# -------------------------
 
+
+##### REFRESH ACCESS TOKEN ######
 @mutation.field("refreshToken")
 async def resolve_refresh(_, info, refreshToken):
     try:
@@ -43,10 +40,9 @@ async def resolve_refresh(_, info, refreshToken):
     except Exception as e:
         raise InternalServerError("An error occurred during token refresh") from e
 
-# -------------------------
-# CREATE USER
-# -------------------------
 
+
+##### CREATE USER ######
 @mutation.field("createUser")
 @requires_admin
 async def resolve_create_user(_, info, input):
@@ -70,10 +66,8 @@ async def resolve_create_user(_, info, input):
         raise InternalServerError("An error occurred during user creation") from e
 
 
-# -------------------------
-# UPDATE USER
-# -------------------------
 
+##### UPDATE USER ######
 @mutation.field("updateUser")
 @requires_admin
 async def resolve_update_user(_, info, userId, input):

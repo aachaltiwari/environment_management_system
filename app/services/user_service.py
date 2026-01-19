@@ -1,4 +1,3 @@
-from typing import List
 from bson import ObjectId
 from jose import JWTError
 from pymongo.errors import DuplicateKeyError
@@ -25,8 +24,8 @@ async def get_current_user(user: dict) -> dict:
     return user
 
 
-####### user listing with pagination and search ######
 
+####### user listing with pagination and search ######
 async def list_active_users(
     db,
     page: int,
@@ -75,11 +74,7 @@ async def list_active_users(
 
 
 
-###### user services for mutations ######
-# -------------------------
-# AUTH
-# -------------------------
-
+##### user login service function #####
 async def login_user(db, email: str, password: str):
     user = await db.users.find_one({"email": email})
 
@@ -99,6 +94,8 @@ async def login_user(db, email: str, password: str):
     }
 
 
+
+##### refresh access token service function #####
 async def refresh_access_token(db, refresh_token: str):
     try:
         payload = decode_token(refresh_token)
@@ -122,10 +119,8 @@ async def refresh_access_token(db, refresh_token: str):
     }
 
 
-# -------------------------
-# USER MANAGEMENT
-# -------------------------
 
+##### CREATE USER SERVICE FUNCTION ######
 async def create_user(db, input_data: dict):
     email = input_data["email"].lower()
 
@@ -150,6 +145,7 @@ async def create_user(db, input_data: dict):
 
 
 
+##### UPDATE USER SERVICE FUNCTION ######
 async def update_user(db, user_oid: ObjectId, input_data: dict):
     update_data = {}
 

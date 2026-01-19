@@ -2,9 +2,8 @@ from datetime import datetime
 from pymongo.errors import DuplicateKeyError
 
 from app.graphql.errors import UserInputError
-from app.utils.objectid import parse_object_id
 
-
+###### create environment type service function ######
 async def create_environment_type(db, user, name: str| None):
     if not name or not name.strip():
         raise UserInputError("Environment type name is required")
@@ -25,6 +24,7 @@ async def create_environment_type(db, user, name: str| None):
         "name": env_type["name"],
         "createdAt": env_type["created_at"].isoformat(),
     }
+
 
 
 ##### list environment types service function #####

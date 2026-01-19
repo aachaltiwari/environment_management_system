@@ -6,6 +6,9 @@ from app.permissions.user import can_manage_users
 from app.permissions.environment import can_manipulate_environment
 from app.utils.objectid import parse_object_id
 
+
+
+####### AUTH DECORATOR  ######
 def requires_auth(resolver):
     @wraps(resolver)
     async def wrapper(parent, info, **kwargs):
@@ -23,7 +26,7 @@ def requires_auth(resolver):
 
 
 
-
+######## ADMIN AUTH DECORATOR  ######
 def requires_admin(resolver):
     @wraps(resolver)
     async def wrapper(parent, info, **kwargs):
@@ -44,6 +47,7 @@ def requires_admin(resolver):
 
 
 
+##### INTEGRATION MANIPULATION DECORATOR  ######
 def requires_integration_manupulation(resolver):
     @wraps(resolver)
     async def wrapper(parent, info, **kwargs):
@@ -68,7 +72,7 @@ def requires_integration_manupulation(resolver):
 
 
 
-
+######## ENVIRONMENT MANIPULATION DECORATOR  ######
 def requires_environment_manipulation(resolver):
     @wraps(resolver)
     async def wrapper(parent, info, integrationId, **kwargs):

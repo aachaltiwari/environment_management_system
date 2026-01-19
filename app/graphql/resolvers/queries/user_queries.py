@@ -6,6 +6,8 @@ from app.services import user_service
 
 query = QueryType()
 
+
+###### CURRENT AUTHENTICATED USER ######
 @query.field("me")
 @requires_auth
 async def resolve_me(_, info):
@@ -27,6 +29,7 @@ async def resolve_me(_, info):
 
 
 
+####### LIST ACTIVE USERS ######
 @query.field("users")
 @requires_auth
 async def resolve_users(_, info, page, pageSize, search=None):

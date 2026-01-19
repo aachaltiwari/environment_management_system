@@ -23,6 +23,8 @@ async def resolve_create_integration(_, info, input):
         raise InternalServerError("An error occurred during integration creation") from e
 
 
+
+##### ASSIGN USER TO INTEGRATION ######
 @mutation.field("assignUserToIntegration")
 @requires_integration_manupulation
 async def resolve_assign_user(_, info, integrationId, userId):
@@ -39,6 +41,7 @@ async def resolve_assign_user(_, info, integrationId, userId):
 
 
 
+##### UPDATE INTEGRATION ######
 @mutation.field("updateIntegration")
 @requires_integration_manupulation
 async def resolve_update_integration(_, info, integrationId, input):
@@ -55,6 +58,7 @@ async def resolve_update_integration(_, info, integrationId, input):
     
 
 
+##### SOFTDELETE INTEGRATION ######
 @mutation.field("deleteIntegration")
 @requires_integration_manupulation
 async def resolve_delete_integration(_, info, integrationId):
@@ -70,6 +74,7 @@ async def resolve_delete_integration(_, info, integrationId):
     
 
 
+##### REMOVE USER FROM INTEGRATION ######
 @mutation.field("removeUserFromIntegration")
 @requires_integration_manupulation
 async def resolve_remove_user(_, info, integrationId, userId):

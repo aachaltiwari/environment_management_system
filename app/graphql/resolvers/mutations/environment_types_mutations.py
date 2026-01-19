@@ -6,6 +6,7 @@ import graphql
 
 mutation = MutationType()
 
+##### CREATE ENVIRONMENT TYPE ######
 @mutation.field("createEnvironmentType")
 @requires_admin
 async def resolve_create_environment_type(_, info, input):

@@ -9,10 +9,8 @@ from app.graphql.errors import UserInputError
 from math import ceil
 
 
-# -------------------------
-# LIST ALL INTEGRATIONS
-# -------------------------
 
+###### LIST INTEGRATIONS ######
 async def list_integrations(
     db,
     page: int,
@@ -30,11 +28,9 @@ async def list_integrations(
         pageSize = 500
 
     skip = (page - 1) * pageSize
-
     
     query = {"is_deleted": False}
 
-    
     if search:
         query["name"] = {
             "$regex": search,
@@ -98,10 +94,10 @@ async def list_integrations(
         "totalPages": ceil(total_items / pageSize) if total_items else 1,
     }
 
-# -------------------------
-# GET SINGLE INTEGRATION
-# -------------------------
 
+
+
+##### GET INTEGRATION BY ID ######
 async def get_integration_by_id(db, integration_oid: ObjectId):
     integ = await db.integrations.find_one({
         "_id": integration_oid,
@@ -114,10 +110,9 @@ async def get_integration_by_id(db, integration_oid: ObjectId):
     return _serialize_integration(integ)
 
 
-# -------------------------
-# USER → INTEGRATIONS
-# -------------------------
 
+
+##### GET USER INTEGRATIONS ######
 async def get_user_integrations(db, user_oid: ObjectId):
     # Validate user
     user = await db.users.find_one({
@@ -146,10 +141,7 @@ async def get_user_integrations(db, user_oid: ObjectId):
 
 
 
-##### createIntegration mutation #####
-# -------------------------
-# CREATE INTEGRATION
-# -------------------------
+##### CREATE INTEGRATION ######
 async def create_integration(db, user: dict, input: dict):
     integration = {
         "name": input["name"].strip(),
@@ -189,9 +181,8 @@ async def create_integration(db, user: dict, input: dict):
     return _serialize_integration(integration)
 
 
-# -------------------------
-# ASSIGN USER TO INTEGRATION
-# -------------------------
+
+###### ASSIGN USER TO INTEGRATION ######
 async def assign_user_to_integration(db, integrationId, userId):
     integration_oid = parse_object_id(integrationId, "integrationId")
     user_oid = parse_object_id(userId, "userId")
@@ -224,9 +215,9 @@ async def assign_user_to_integration(db, integrationId, userId):
     return True
 
 
-# -------------------------
-# UPDATE INTEGRATION
-# -------------------------
+
+
+###### UPDATE INTEGRATION ######
 async def update_integration(db, integrationId, input: dict):
     integration_oid = parse_object_id(integrationId, "integrationId")
 
@@ -259,9 +250,9 @@ async def update_integration(db, integrationId, input: dict):
     return _serialize_integration(updated_integration)
 
 
-# -------------------------
-# DELETE (SOFT DELETE) INTEGRATION
-# -------------------------
+
+
+######## SOFT DELETE INTEGRATION ######
 async def soft_delete_integration(db, integrationId):
     integration_oid = parse_object_id(integrationId, "integrationId")
 
@@ -280,9 +271,9 @@ async def soft_delete_integration(db, integrationId):
     return True
 
 
-# -------------------------
-# REMOVE USER FROM INTEGRATION
-# -------------------------
+
+
+###### REMOVE USER FROM INTEGRATION ######
 async def remove_user_from_integration(db, integrationId, userId):
     integration_oid = parse_object_id(integrationId, "integrationId")
     user_oid = parse_object_id(userId, "userId")
@@ -299,9 +290,9 @@ async def remove_user_from_integration(db, integrationId, userId):
     return True
 
 
-#-------------------------
-# SERIALIZER
-# -------------------------
+
+
+####### SERIALIZE INTEGRATION ######
 def _serialize_integration(integ: dict) -> dict:
     return {
         "id": str(integ["_id"]),
