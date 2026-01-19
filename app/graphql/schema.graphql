@@ -18,7 +18,6 @@ type AccessTokenPayload {
     accessToken: String!
 }
 
-
 type User {
   id: ID!
   email: String!
@@ -35,7 +34,6 @@ type UserPage {
   totalPages: Int!
 }
 
-
 input CreateUserInput {
   email: String!
   name: String!
@@ -49,7 +47,6 @@ input UpdateUserInput {
   isActive: Boolean
 }
 
-
 type Integration {
   id: ID!
   name: String!
@@ -59,7 +56,6 @@ type Integration {
   isDeleted: Boolean!
 }
 
-
 type IntegrationPagination {
   items: [Integration!]!
   page: Int!
@@ -67,7 +63,6 @@ type IntegrationPagination {
   totalItems: Int!
   totalPages: Int!
 }
-
 
 input CreateIntegrationInput {
   name: String!
@@ -80,7 +75,6 @@ input UpdateIntegrationInput {
   description: String
 }
 
-
 type EnvironmentType {
   id: ID!
   name: String!
@@ -88,11 +82,9 @@ type EnvironmentType {
   createdBy: String!
 }
 
-
 input CreateEnvironmentTypeInput {
   name: String!
 }
-
 
 type Environment {
   id: ID!
@@ -100,12 +92,12 @@ type Environment {
   environmentType: String!
   title: String!
   content: JSON!
+  note: String
   createdBy: ID!
   updatedBy: ID!
   createdAt: String!
   updatedAt: String!
 }
-
 
 input CreateEnvironmentInput {
   environmentType: String!
@@ -113,14 +105,10 @@ input CreateEnvironmentInput {
   content: JSON!
 }
 
-
 input UpdateEnvironmentInput {
   title: String
   content: JSON 
 }
-
-
-
 
 
 
@@ -131,7 +119,6 @@ type Query {
     #Users
     me: User
     users(page: Int = 1 pageSize: Int = 10 search: String): UserPage!
-
 
     #Integration
     integrations(assignedUserId: ID page: Int = 1 pageSize: Int = 10 search: String): IntegrationPagination!
@@ -145,9 +132,8 @@ type Query {
     #environment_types
     environmentTypes: [EnvironmentType!]
 
-
-
     }
+
 
 
 ##### MUTATION #######
@@ -160,7 +146,6 @@ type Mutation {
     createUser(input:CreateUserInput!): User!
     updateUser(userId: ID!, input: UpdateUserInput!): User!
 
-
     #integrations
     createIntegration(input: CreateIntegrationInput!): Integration!
     updateIntegration(integrationId: ID!, input: UpdateIntegrationInput!): Integration!
@@ -168,10 +153,8 @@ type Mutation {
     assignUserToIntegration(integrationId: ID! userId: ID!): Boolean!
     removeUserFromIntegration(integrationId: ID! userId: ID!): Boolean!
 
-
     # Environment Type
     createEnvironmentType(input: CreateEnvironmentTypeInput!): EnvironmentType!
-
 
     # Environment
     createEnvironment(integrationId: ID! input: CreateEnvironmentInput!): Environment!

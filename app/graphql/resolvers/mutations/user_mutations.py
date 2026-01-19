@@ -4,7 +4,6 @@ from app.graphql.decorators import requires_admin
 from app.graphql.errors import InternalServerError
 from app.services import user_service
 from app.utils.objectid import parse_object_id
-from bson import ObjectId
 
 mutation = MutationType()
 
@@ -47,18 +46,10 @@ async def resolve_refresh(_, info, refreshToken):
 @requires_admin
 async def resolve_create_user(_, info, input):
     try:
-        user = await user_service.create_user(
+        return await user_service.create_user(
             info.context["db"],
             input,
         )
-   
-        return {
-            "id": str(user["_id"]),
-            "email": user["email"],
-            "name": user["name"],
-            "role": user["role"],
-            "isActive": user["is_active"],
-        }
     
     except GraphQLError:
         raise
@@ -71,21 +62,15 @@ async def resolve_create_user(_, info, input):
 @mutation.field("updateUser")
 @requires_admin
 async def resolve_update_user(_, info, userId, input):
-    user_oid = parse_object_id(userId, "userId")
+    
     try:
-        user = await user_service.update_user(
+        user_oid = parse_object_id(userId, "userId")
+        return await user_service.update_user(
             info.context["db"],
-            ObjectId(user_oid),
+            user_oid,
             input,
         )
-
-        return {
-        "id": str(user["_id"]),
-        "email": user["email"],
-        "name": user["name"],
-        "role": user["role"],
-        "isActive": user["is_active"],
-    }
+    
     except GraphQLError:
         raise
     except Exception as e:

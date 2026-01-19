@@ -46,11 +46,11 @@ async def resolve_integrations(
 @query.field("integration")
 @requires_auth
 async def resolve_integration(_, info, integrationId):
-    integration_oid = parse_object_id(
+    
+    try:
+        integration_oid = parse_object_id(
         integrationId, "integrationId"
     )
-
-    try:
         return await integration_service.get_integration_by_id(
             info.context["db"],
             integration_oid,
@@ -67,8 +67,9 @@ async def resolve_integration(_, info, integrationId):
 @query.field("userIntegrations")
 @requires_auth
 async def resolve_user_integrations(_, info, userId):
-    user_oid = parse_object_id(userId, "userId")
+    
     try:
+        user_oid = parse_object_id(userId, "userId")
         return await integration_service.get_user_integrations(
             info.context["db"],
             user_oid,

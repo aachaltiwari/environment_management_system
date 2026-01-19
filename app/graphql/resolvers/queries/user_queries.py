@@ -12,16 +12,10 @@ query = QueryType()
 @requires_auth
 async def resolve_me(_, info):
     try:
-        user = await user_service.get_current_user(
+        return await user_service.get_current_user(
             info.context["user"]
         )
 
-        return {
-            "id": str(user["_id"]),
-            "email": user["email"],
-            "name": user["name"],
-            "role": user["role"],
-        }
     except GraphQLError:
         raise
     except Exception as e:

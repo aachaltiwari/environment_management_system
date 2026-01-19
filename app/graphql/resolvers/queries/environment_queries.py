@@ -11,21 +11,11 @@ query = QueryType()
 @query.field("environments")
 @requires_auth
 async def resolve_environments(_, info, integrationId):
-    db = info.context["db"]
-
+   
     try:
-        envs = await list_environments(db, integrationId)
-
-        return [{
-            "id": str(e["_id"]),
-            "environmentType": e["environment_type"],
-            "title": e["title"],
-            "content": e["content"],
-            "createdBy": str(e["created_by"]),
-            "updatedBy": str(e["updated_by"]),
-            "createdAt": e["created_at"].isoformat(),
-            "updatedAt": e["updated_at"].isoformat(),
-        } for e in envs]
+        db = info.context["db"]
+        return await list_environments(db, integrationId)
+    
     except GraphQLError:
         raise
     except Exception as e:
@@ -38,23 +28,11 @@ async def resolve_environments(_, info, integrationId):
 @query.field("environment")
 @requires_auth
 async def resolve_environment(_, info, environmentId):
-    db = info.context["db"]
-
+    
     try:
-        env = await get_environment(db, environmentId)
-        if not env:
-            return None
-
-        return {
-            "id": str(env["_id"]),
-            "environmentType": env["environment_type"],
-            "title": env["title"],
-            "content": env["content"],
-            "createdBy": str(env["created_by"]),
-            "updatedBy": str(env["updated_by"]),
-            "createdAt": env["created_at"].isoformat(),
-            "updatedAt": env["updated_at"].isoformat(),
-        }
+        db = info.context["db"]
+        return await get_environment(db, environmentId) 
+    
     except GraphQLError:
         raise
     except Exception as e:

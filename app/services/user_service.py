@@ -18,10 +18,12 @@ from typing import Optional
 
 ###### services for user queries ######
 async def get_current_user(user: dict) -> dict:
-    """
-    Returns current authenticated user
-    """
-    return user
+    return {
+            "id": str(user["_id"]),
+            "email": user["email"],
+            "name": user["name"],
+            "role": user["role"],
+        }
 
 
 
@@ -141,7 +143,7 @@ async def create_user(db, input_data: dict):
         raise UserInputError("User with this email already exists")
 
     user["_id"] = result.inserted_id
-    return user
+    return _serialize_user(user)
 
 
 
@@ -172,4 +174,16 @@ async def update_user(db, user_oid: ObjectId, input_data: dict):
     if not result:
         raise UserInputError("User not found")
 
-    return result
+    return _serialize_user(result)
+
+
+
+##### serialize user ######
+def _serialize_user(user: dict) -> dict:
+    return {
+        "id": str(user["_id"]),
+        "email": user["email"],
+        "name": user["name"],
+        "role": user["role"],
+        "isActive": user.get("is_active", True),
+    }

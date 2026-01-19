@@ -1,4 +1,3 @@
-from bson import ObjectId
 from app.permissions.base import is_admin, is_team_lead
 
 

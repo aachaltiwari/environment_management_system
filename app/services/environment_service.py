@@ -4,7 +4,7 @@ from app.graphql.errors import UserInputError
 from app.utils.objectid import parse_object_id
 
 ##### list_environments service function #####
-async def list_environments(db, integration_id):
+async def list_environments(db, integration_id: str)-> list[dict] :
     integration_oid = parse_object_id(integration_id, "integrationId")
 
     integrations = await db.integrations.find_one({
@@ -21,16 +21,16 @@ async def list_environments(db, integration_id):
     async for env in cursor:
         result.append(env)
 
-    return result
+    return [serialize_environment(env) for env in result]
 
 
 
 ##### get environment by id service function #####
-async def get_environment(db, environment_id):
+async def get_environment(db, environment_id: str) -> dict | None:
     env_oid = parse_object_id(environment_id, "environmentId")
 
     env = await db.environments.find_one({"_id": env_oid})
-    return env
+    return serialize_environment(env) if env else None
 
 
 ##### create environment service function #####
@@ -52,6 +52,7 @@ async def create_environment(db, user, integration_id, data):
         "environment_type": data["environmentType"],
         "title": data["title"],
         "content": data["content"],
+        "note": data.get("note"),
         "created_by": user["_id"],
         "updated_by": user["_id"],
         "created_at": datetime.utcnow(),
@@ -66,13 +67,12 @@ async def create_environment(db, user, integration_id, data):
         )
 
     env["_id"] = result.inserted_id
-    return env
+    return serialize_environment(env)
 
 
 
 ##### update environment service function #####
-async def update_environment(db, user, integration_id, environment_id, data
-):
+async def update_environment(db, user, integration_id: str, environment_id: str, data)-> dict:
     env_oid = parse_object_id(environment_id, "environmentId")
     integration_oid = parse_object_id(integration_id, "integrationId")
 
@@ -105,11 +105,11 @@ async def update_environment(db, user, integration_id, environment_id, data
             "Environment not found for this integration"
         )
 
-    return env
+    return serialize_environment(env)
 
 
 ##### delete environment service function #####
-async def delete_environment(db, environment_id, integration_id):
+async def delete_environment(db, environment_id: str, integration_id: str) -> bool:
     env_oid = parse_object_id(environment_id, "environmentId")
     integration_oid = parse_object_id(integration_id, "integrationId")
 
@@ -127,4 +127,17 @@ async def delete_environment(db, environment_id, integration_id):
     return True
 
 
-
+##### environment serialize function #####
+def serialize_environment(env: dict) -> dict:
+    return {
+        "id": str(env["_id"]),
+        "integrationId": str(env["integration_id"]),
+        "environmentType": str(env["environment_type"]),
+        "title": env["title"],
+        "content": env["content"],
+        "note": env.get("note"),
+        "createdBy": str(env["created_by"]),
+        "updatedBy": str(env["updated_by"]),
+        "createdAt": env["created_at"],
+        "updatedAt": env["updated_at"],
+    }

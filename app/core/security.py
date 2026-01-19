@@ -5,9 +5,6 @@ from app.core.config import settings
 
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
-TOKEN_TYPE_ACCESS = "access"
-TOKEN_TYPE_REFRESH = "refresh"
-
 
 ### Password Hashing Function
 def hash_password(password: str) -> str:

@@ -6,8 +6,6 @@ from typing import Any, Dict
 
 class EnvironmentTypeModel(MongoBaseModel):
     name: str = Field(..., min_length=2)
-    created_at: datetime
-
 
 
 class EnvironmentModel(MongoBaseModel):
@@ -21,5 +19,4 @@ class EnvironmentModel(MongoBaseModel):
     created_by: PyObjectId
     updated_by: PyObjectId
 
-    created_at: datetime
     updated_at: datetime
