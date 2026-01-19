@@ -10,6 +10,10 @@ async def connect_mongo(app):
     app.state.db = client[settings.mongo_db]
     logger.info("MongoDB connected")
 
+    await app.state.db.users.create_index(
+        [("email", 1)],
+        unique=True)    
+
 
     await app.state.db.integrations.create_index(
         [("name", 1)],
