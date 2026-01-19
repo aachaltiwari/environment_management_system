@@ -37,6 +37,16 @@ async def get_environment(db, environment_id):
 async def create_environment(db, user, integration_id, data):
     integration_oid = parse_object_id(integration_id, "integrationId")
 
+     # Validate environment type exists
+    env_type = await db.environment_types.find_one({
+        "name": data["environmentType"]
+    })
+
+    if not env_type:
+        raise UserInputError(
+            f"Environment type '{data['environmentType']}' does not exist"
+        )
+
     env = {
         "integration_id": integration_oid,
         "environment_type": data["environmentType"],
